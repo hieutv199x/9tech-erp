@@ -31,6 +31,7 @@ RUN apt-get update && \
     python3-odf \
     python3-pdfminer \
     python3-pip \
+    python3-venv \
     python3-phonenumbers \
     python3-pyldap \
     python3-qrcode \
@@ -78,16 +79,18 @@ RUN npm install -g rtlcss
 
 # Install Odoo from source (development)
 ENV ODOO_VERSION 19.0
+
+# Create odoo user before copying source
+RUN useradd -m -d /var/lib/odoo -U -r -s /bin/bash odoo
+
 WORKDIR /odoo
 
 # Copy Odoo source (from host)
 COPY --chown=odoo:odoo . /odoo/
 
-# Install Python dependencies
-RUN pip install --no-cache-dir -e /odoo
-
-# Create odoo user
-RUN useradd -m -d /var/lib/odoo -U -r -s /bin/bash odoo
+# Install Python dependencies inside a venv (PEP 668-safe on Ubuntu Noble)
+RUN python3 -m venv --system-site-packages /opt/odoo-venv && \
+    /opt/odoo-venv/bin/pip install --no-cache-dir -e /odoo
 
 # Copy configuration and scripts
 COPY ./docker/odoo.conf /etc/odoo/odoo.conf
@@ -107,6 +110,7 @@ EXPOSE 8069 8071 8072
 
 # Set environment
 ENV ODOO_RC /etc/odoo/odoo.conf
+ENV PATH=/opt/odoo-venv/bin:$PATH
 USER odoo
 
 ENTRYPOINT ["/entrypoint.sh"]
