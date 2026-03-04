@@ -133,6 +133,7 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           password: ${{ secrets.VPS_PASSWORD }}
           port: ${{ secrets.VPS_PORT }}
+          command_timeout: 60m
           script: |
             set -e
             echo "🚀 Starting deployment..."
