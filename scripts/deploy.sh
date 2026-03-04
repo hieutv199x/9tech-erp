@@ -37,8 +37,16 @@ warn() {
 log "🔍 Checking prerequisites..."
 
 command -v docker >/dev/null 2>&1 || error "Docker is not installed"
-command -v docker-compose >/dev/null 2>&1 || error "Docker Compose is not installed"
 command -v git >/dev/null 2>&1 || error "Git is not installed"
+
+# Support both modern "docker compose" and legacy "docker-compose"
+if docker compose version >/dev/null 2>&1; then
+    compose() { docker compose "$@"; }
+elif command -v docker-compose >/dev/null 2>&1; then
+    compose() { docker-compose "$@"; }
+else
+    error "Docker Compose is not installed"
+fi
 
 log "✅ All prerequisites are installed"
 
@@ -57,8 +65,8 @@ mkdir -p "$BACKUP_DIR"
 log "🔐 Creating database backup..."
 BACKUP_FILE="$BACKUP_DIR/odoo_db_backup_$TIMESTAMP.sql"
 
-if docker-compose ps | grep -q "odoo_db"; then
-    docker-compose exec -T db pg_dump -U odoo odoo_db > "$BACKUP_FILE" 2>/dev/null || {
+if compose ps | grep -q "odoo_db"; then
+    compose exec -T db pg_dump -U odoo odoo_db > "$BACKUP_FILE" 2>/dev/null || {
         warn "Failed to backup database, continuing anyway..."
     }
     log "✅ Database backup created: $BACKUP_FILE"
@@ -91,15 +99,15 @@ fi
 
 # Stop existing containers
 log "⛔ Stopping existing containers..."
-docker-compose down || warn "Failed to stop containers gracefully"
+compose down || warn "Failed to stop containers gracefully"
 
 # Rebuild image
 log "🔨 Building Docker image..."
-docker-compose build --no-cache || error "Docker build failed"
+compose build --no-cache || error "Docker build failed"
 
 # Start services
 log "🚀 Starting services..."
-docker-compose up -d || error "Failed to start services"
+compose up -d || error "Failed to start services"
 
 # Wait for services
 log "⏳ Waiting for services to be ready..."
@@ -111,7 +119,7 @@ MAX_RETRIES=30
 RETRY_COUNT=0
 
 while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
-    if docker-compose exec -T db pg_isready -U odoo >/dev/null 2>&1; then
+    if compose exec -T db pg_isready -U odoo >/dev/null 2>&1; then
         log "✅ Database is ready"
         break
     fi
@@ -126,9 +134,9 @@ fi
 
 # Initialize database if needed
 log "📊 Checking database initialization..."
-docker-compose exec -T odoo odoo -d odoo_db --no-http >/dev/null 2>&1 || {
+compose exec -T odoo odoo -d odoo_db --no-http >/dev/null 2>&1 || {
     log "📊 Database not initialized, initializing now..."
-    docker-compose exec -T odoo odoo -d odoo_db \
+    compose exec -T odoo odoo -d odoo_db \
         -i base,sale,stock,account,crm,utm,mass_mailing \
         --without-demo=all \
         --stop-after-init || warn "Database initialization encountered issues"

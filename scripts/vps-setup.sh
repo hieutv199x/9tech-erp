@@ -45,8 +45,8 @@ if ! command -v docker &> /dev/null; then
     apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
 fi
 
-# Install Docker Compose
-if ! command -v docker-compose &> /dev/null; then
+# Install Docker Compose (legacy binary) only if plugin is unavailable
+if ! docker compose version >/dev/null 2>&1 && ! command -v docker-compose &> /dev/null; then
     echo "Installing Docker Compose..."
     curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
     chmod +x /usr/local/bin/docker-compose
@@ -69,7 +69,11 @@ chown -R "$UBUNTU_USER:$UBUNTU_USER" "$PROJECT_DIR" "$BACKUP_DIR"
 echo ""
 echo "🌐 Verifying Docker installation..."
 docker --version
-docker-compose --version
+if docker compose version >/dev/null 2>&1; then
+    docker compose version
+else
+    docker-compose --version
+fi
 
 echo ""
 echo "✅ VPS setup completed!"

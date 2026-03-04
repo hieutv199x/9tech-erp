@@ -152,6 +152,16 @@ jobs:
 
             # Navigate to project directory
             cd "$PROJECT_DIR" || exit 1
+
+            # Detect compose command
+            if docker compose version >/dev/null 2>&1; then
+              compose() { docker compose "$@"; }
+            elif command -v docker-compose >/dev/null 2>&1; then
+              compose() { docker-compose "$@"; }
+            else
+              echo "❌ Neither 'docker compose' nor 'docker-compose' is available"
+              exit 1
+            fi
             
             # Pull latest changes
             echo "📥 Pulling latest code..."
@@ -159,15 +169,15 @@ jobs:
             
             # Stop existing containers
             echo "⛔ Stopping existing containers..."
-            docker-compose down || true
+            compose down || true
             
             # Build new image
             echo "🔨 Building Docker image..."
-            docker-compose build --no-cache
+            compose build --no-cache
             
             # Start services
             echo "🚀 Starting services..."
-            docker-compose up -d
+            compose up -d
             
             # Wait for services to be ready
             echo "⏳ Waiting for services to be ready..."
@@ -175,9 +185,9 @@ jobs:
             
             # Initialize database (only on first deploy or if needed)
             echo "📊 Checking database..."
-            docker-compose exec -T odoo odoo -d odoo_db --no-http 2>/dev/null || {
+            compose exec -T odoo odoo -d odoo_db --no-http 2>/dev/null || {
               echo "📊 Initializing database..."
-              docker-compose exec -T odoo odoo -d odoo_db -i base,sale,stock,account --without-demo=all --stop-after-init
+              compose exec -T odoo odoo -d odoo_db -i base,sale,stock,account --without-demo=all --stop-after-init
             }
             
             # Health check
