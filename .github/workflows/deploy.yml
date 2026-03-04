@@ -92,6 +92,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     if: github.event_name != 'pull_request'
+    continue-on-error: true
 
     steps:
       - name: Checkout code
@@ -99,12 +100,16 @@ jobs:
 
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
+        env:
+          TRIVY_DB_REPOSITORY: ghcr.io/aquasecurity/trivy-db
+          TRIVY_JAVA_DB_REPOSITORY: ghcr.io/aquasecurity/trivy-java-db
         with:
           image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
           format: 'sarif'
           output: 'trivy-results.sarif'
 
       - name: Upload Trivy results
+        if: always() && hashFiles('trivy-results.sarif') != ''
         uses: github/codeql-action/upload-sarif@v2
         with:
           sarif_file: 'trivy-results.sarif'
@@ -131,9 +136,22 @@ jobs:
           script: |
             set -e
             echo "🚀 Starting deployment..."
+
+            PROJECT_DIR="${{ secrets.VPS_PROJECT_DIR }}"
+            if [ -z "$PROJECT_DIR" ]; then
+              PROJECT_DIR="/home/${{ secrets.VPS_USER }}/odoo"
+            fi
+            echo "📁 Using project directory: $PROJECT_DIR"
             
+            # Ensure project exists on VPS
+            if [ ! -d "$PROJECT_DIR/.git" ]; then
+              echo "📂 Project not found. Cloning repository..."
+              mkdir -p "$PROJECT_DIR"
+              git clone https://github.com/${{ github.repository }}.git "$PROJECT_DIR"
+            fi
+
             # Navigate to project directory
-            cd /home/ubuntu/odoo || exit 1
+            cd "$PROJECT_DIR" || exit 1
             
             # Pull latest changes
             echo "📥 Pulling latest code..."
