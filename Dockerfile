@@ -31,6 +31,7 @@ RUN apt-get update && \
     python3-odf \
     python3-pdfminer \
     python3-pip \
+    python3-psycopg2 \
     python3-venv \
     python3-phonenumbers \
     python3-pyldap \
