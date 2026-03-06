@@ -1,0 +1,60 @@
+name: 9tech-erp
+
+services:
+  db:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - erp_net
+
+  odoo:
+    image: ${APP_IMAGE}
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:${ODOO_HTTP_PORT:-8069}:8069"
+    environment:
+      HOST: db
+      PORT: 5432
+      USER: ${POSTGRES_USER}
+      PASSWORD: ${POSTGRES_PASSWORD}
+    command: >-
+      odoo -c /etc/odoo/odoo.conf
+      --db_host=db
+      --db_port=5432
+      --db_user=${POSTGRES_USER}
+      --db_password=${POSTGRES_PASSWORD}
+      --admin_passwd=${ODOO_ADMIN_PASSWD}
+      --dbfilter=${ODOO_DB_FILTER:-.*}
+      --without-demo=all
+    healthcheck:
+      test: ["CMD-SHELL", "python3 -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8069/web/login', timeout=5)\""]
+      interval: 15s
+      timeout: 5s
+      retries: 20
+      start_period: 40s
+    volumes:
+      - odoo_data:/var/lib/odoo
+    networks:
+      - erp_net
+
+networks:
+  erp_net:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  odoo_data:

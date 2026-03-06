@@ -1,0 +1,147 @@
+name: Deploy Production (VPS)
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: "Image tag to deploy (example: sha-abc123...)"
+        required: false
+        type: string
+  workflow_run:
+    workflows: ["Docker Image (Docker Hub)"]
+    types: [completed]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: production-deploy
+  cancel-in-progress: false
+
+env:
+  IMAGE_NAME: 9tech-erp
+  PROJECT_DIR: /opt/9tech-erp
+
+jobs:
+  prepare:
+    name: Resolve Target Image
+    runs-on: ubuntu-latest
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'workflow_run' &&
+       github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.event == 'push' &&
+       github.event.workflow_run.head_branch == 'main')
+    outputs:
+      image_ref: ${{ steps.resolve.outputs.image_ref }}
+      image_tag: ${{ steps.resolve.outputs.image_tag }}
+    steps:
+      - name: Resolve image tag and repository
+        id: resolve
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ inputs.image_tag }}" ]; then
+            IMAGE_TAG="${{ inputs.image_tag }}"
+          elif [ "${{ github.event_name }}" = "workflow_run" ]; then
+            IMAGE_TAG="sha-${{ github.event.workflow_run.head_sha }}"
+          else
+            IMAGE_TAG="sha-${{ github.sha }}"
+          fi
+
+          if [ -n "${{ secrets.DOCKERHUB_USERNAME }}" ]; then
+            IMAGE_REPO="${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}"
+          else
+            IMAGE_REPO="${{ github.repository_owner }}/${{ env.IMAGE_NAME }}"
+          fi
+
+          echo "image_tag=${IMAGE_TAG}" >> "${GITHUB_OUTPUT}"
+          echo "image_ref=${IMAGE_REPO}:${IMAGE_TAG}" >> "${GITHUB_OUTPUT}"
+          echo "Deploy target image: ${IMAGE_REPO}:${IMAGE_TAG}"
+
+  deploy:
+    name: Deploy To Production VPS
+    runs-on: ubuntu-latest
+    needs: prepare
+    if: needs.prepare.outputs.image_ref != ''
+    environment:
+      name: production
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate required secrets
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
+          VPS_SSH_PRIVATE_KEY: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
+          PROD_POSTGRES_DB: ${{ secrets.PROD_POSTGRES_DB }}
+          PROD_POSTGRES_USER: ${{ secrets.PROD_POSTGRES_USER }}
+          PROD_POSTGRES_PASSWORD: ${{ secrets.PROD_POSTGRES_PASSWORD }}
+          PROD_ODOO_ADMIN_PASSWD: ${{ secrets.PROD_ODOO_ADMIN_PASSWD }}
+        run: |
+          missing=0
+          for key in DOCKERHUB_USERNAME DOCKERHUB_TOKEN VPS_HOST VPS_SSH_USER VPS_SSH_PRIVATE_KEY PROD_POSTGRES_DB PROD_POSTGRES_USER PROD_POSTGRES_PASSWORD PROD_ODOO_ADMIN_PASSWD; do
+            if [ -z "${!key}" ]; then
+              echo "Missing required secret: ${key}" >&2
+              missing=1
+            fi
+          done
+          if [ "${missing}" -ne 0 ]; then
+            exit 1
+          fi
+
+      - name: Upload deploy assets to VPS
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_SSH_USER }}
+          key: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
+          port: ${{ secrets.VPS_SSH_PORT != '' && secrets.VPS_SSH_PORT || 22 }}
+          source: "deploy/docker-compose.prod.yml,deploy/remote-deploy.sh"
+          target: ${{ env.PROJECT_DIR }}
+          overwrite: true
+          strip_components: 0
+
+      - name: Run remote deployment
+        uses: appleboy/ssh-action@v1.0.3
+        env:
+          PROJECT_DIR: ${{ env.PROJECT_DIR }}
+          APP_IMAGE: ${{ needs.prepare.outputs.image_ref }}
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+          POSTGRES_DB: ${{ secrets.PROD_POSTGRES_DB }}
+          POSTGRES_USER: ${{ secrets.PROD_POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.PROD_POSTGRES_PASSWORD }}
+          ODOO_ADMIN_PASSWD: ${{ secrets.PROD_ODOO_ADMIN_PASSWD }}
+          ODOO_DB_FILTER: ${{ secrets.PROD_ODOO_DB_FILTER }}
+          ODOO_HTTP_PORT: ${{ secrets.PROD_ODOO_HTTP_PORT }}
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_SSH_USER }}
+          key: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
+          port: ${{ secrets.VPS_SSH_PORT != '' && secrets.VPS_SSH_PORT || 22 }}
+          envs: PROJECT_DIR,APP_IMAGE,DOCKERHUB_USERNAME,DOCKERHUB_TOKEN,POSTGRES_DB,POSTGRES_USER,POSTGRES_PASSWORD,ODOO_ADMIN_PASSWD,ODOO_DB_FILTER,ODOO_HTTP_PORT
+          script_stop: true
+          script: |
+            set -euo pipefail
+            PROJECT_DIR="${PROJECT_DIR:-/opt/9tech-erp}"
+            ODOO_DB_FILTER="${ODOO_DB_FILTER:-.*}"
+            ODOO_HTTP_PORT="${ODOO_HTTP_PORT:-8069}"
+
+            mkdir -p "${PROJECT_DIR}/deploy"
+
+            cat > "${PROJECT_DIR}/.env" <<EOF
+            APP_IMAGE=${APP_IMAGE}
+            POSTGRES_DB=${POSTGRES_DB}
+            POSTGRES_USER=${POSTGRES_USER}
+            POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+            ODOO_ADMIN_PASSWD=${ODOO_ADMIN_PASSWD}
+            ODOO_DB_FILTER=${ODOO_DB_FILTER}
+            ODOO_HTTP_PORT=${ODOO_HTTP_PORT}
+            EOF
+            chmod 600 "${PROJECT_DIR}/.env"
+
+            echo "${DOCKERHUB_TOKEN}" | docker login -u "${DOCKERHUB_USERNAME}" --password-stdin
+            chmod +x "${PROJECT_DIR}/deploy/remote-deploy.sh"
+            PROJECT_DIR="${PROJECT_DIR}" "${PROJECT_DIR}/deploy/remote-deploy.sh"
