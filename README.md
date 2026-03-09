@@ -1,37 +1,80 @@
-# Odoo
+# 9Tech ERP Workspace (Odoo Source + Custom Addons)
 
-[![Build Status](https://runbot.odoo.com/runbot/badge/flat/1/master.svg)](https://runbot.odoo.com/runbot)
-[![Tech Doc](https://img.shields.io/badge/master-docs-875A7B.svg?style=flat&colorA=8F8F8F)](https://www.odoo.com/documentation/master)
-[![Help](https://img.shields.io/badge/master-help-875A7B.svg?style=flat&colorA=8F8F8F)](https://www.odoo.com/forum/help-1)
-[![Nightly Builds](https://img.shields.io/badge/master-nightly-875A7B.svg?style=flat&colorA=8F8F8F)](https://nightly.odoo.com/)
+This repository follows a source-install workflow:
 
-Odoo is a suite of web based open source business apps.
+- Odoo source code is the platform runtime.
+- Business features live in `custom_addons/`.
+- Core code under `addons/` and `odoo/` should stay upstream-compatible.
 
-The main Odoo Apps include an [Open Source CRM](https://www.odoo.com/page/crm),
-[Website Builder](https://www.odoo.com/app/website),
-[eCommerce](https://www.odoo.com/app/ecommerce),
-[Warehouse Management](https://www.odoo.com/app/inventory),
-[Project Management](https://www.odoo.com/app/project),
-[Billing &amp; Accounting](https://www.odoo.com/app/accounting),
-[Point of Sale](https://www.odoo.com/app/point-of-sale-shop),
-[Human Resources](https://www.odoo.com/app/employees),
-[Marketing](https://www.odoo.com/app/social-marketing),
-[Manufacturing](https://www.odoo.com/app/manufacturing),
-[...](https://www.odoo.com/)
+## Workspace Layout
 
-Odoo Apps can be used as stand-alone applications, but they also integrate seamlessly so you get
-a full-featured [Open Source ERP](https://www.odoo.com) when you install several Apps.
+```text
+9tech-erp/
+├── addons/                  # upstream/community addons from Odoo source
+├── odoo/                    # Odoo framework source
+├── enterprise/              # optional enterprise source checkout
+├── custom_addons/           # 9Tech and third-party business modules
+├── config/
+│   └── odoo.conf            # local source-run configuration
+├── docker/
+│   └── odoo.conf            # container runtime configuration
+├── scripts/                 # helper scripts
+├── deploy/                  # production deploy assets
+└── README.md
+```
 
-## Getting started with Odoo
+## Custom Modules
 
-For a standard installation please follow the [Setup instructions](https://www.odoo.com/documentation/master/administration/install/install.html)
-from the documentation.
+Starter domain modules:
 
-To learn the software, we recommend the [Odoo eLearning](https://www.odoo.com/slides),
-or [Scale-up, the business game](https://www.odoo.com/page/scale-up-business-game).
-Developers can start with [the developer tutorials](https://www.odoo.com/documentation/master/developer/howtos.html).
+- `company_base`
+- `company_sales`
+- `company_purchase`
+- `company_inventory`
 
-## Security
+UI extension modules moved out of core path:
 
-If you believe you have found a security issue, check our [Responsible Disclosure page](https://www.odoo.com/security-report)
-for details and get in touch with us via email.
+- `muk_web_appsbar`
+- `muk_web_chatter`
+- `muk_web_colors`
+- `muk_web_dialog`
+- `muk_web_group`
+- `muk_web_refresh`
+- `muk_web_theme`
+
+## Local Run (Source Install)
+
+1. Create and activate a Python environment.
+2. Install dependencies from `requirements.txt`.
+3. Configure database credentials in `config/odoo.conf`.
+4. Start Odoo from repository root:
+
+```bash
+scripts/run-dev.sh odoo
+```
+
+Or run directly:
+
+```bash
+python3 odoo-bin -c config/odoo.conf -d odoo
+```
+
+## Addons Path Policy
+
+`config/odoo.conf` and `docker/odoo.conf` load modules in this order:
+
+1. `custom_addons`
+2. `addons`
+
+If an enterprise checkout is added later, place it first:
+
+```ini
+addons_path = enterprise,custom_addons,addons
+```
+
+## Development Rules
+
+- Build business behavior in `custom_addons/`.
+- Prefer model and view inheritance over copying core modules.
+- Keep modules small and domain-scoped.
+- Add security and tests per module.

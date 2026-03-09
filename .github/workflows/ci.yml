@@ -26,7 +26,7 @@ jobs:
       - name: Run Ruff
         uses: astral-sh/ruff-action@v3
         with:
-          args: "check addons odoo"
+          args: "check custom_addons addons odoo"
 
   dependency-scan:
     name: Dependency Scan (pip-audit)

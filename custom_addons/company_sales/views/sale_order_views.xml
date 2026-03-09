@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_order_form_company_sales" model="ir.ui.view">
+        <field name="name">sale.order.form.company.sales</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='client_order_ref']" position="after">
+                <field name="x_sales_channel"/>
+                <field name="x_approval_state"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
