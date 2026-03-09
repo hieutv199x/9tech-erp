@@ -1,8 +1,81 @@
 .o_form_view {
     &:not(.o_field_highlight) .o_field_widget:not(.o_field_invalid):not(.o_field_highlight) .o_input:not(:hover):not(:focus) {
-        --o-input-border-color: #{$gray-200};
+        --o-input-border-color: #{$mk-theme-border-soft};
     }
-	&:not(.o_field_highlight) .o_required_modifier.o_field_widget:not(.o_field_invalid):not(.o_field_highlight) .o_input:not(:hover):not(:focus) {
-        --o-input-border-color: #{$gray-400};
-	}
+    &:not(.o_field_highlight) .o_required_modifier.o_field_widget:not(.o_field_invalid):not(.o_field_highlight) .o_input:not(:hover):not(:focus) {
+        --o-input-border-color: #{$mk-theme-border-strong};
+    }
+
+    .o_form_sheet_bg {
+        background:
+            radial-gradient(120% 72% at 100% 0%, rgba($mk-appbar-active, 0.08) 0%, rgba(255, 255, 255, 0) 48%),
+            linear-gradient(180deg, #f8fbff 0%, #eef3fa 100%);
+    }
+
+    .o_form_sheet {
+        border: 1px solid $mk-theme-border-soft;
+        border-radius: $mk-theme-radius-lg;
+        box-shadow: $mk-theme-elevation-1;
+        background: rgba($mk-theme-surface-card, 0.98);
+        padding: 1.35rem 1.2rem 1rem;
+    }
+
+    .o_group .o_td_label .o_form_label {
+        color: $mk-theme-text-muted;
+        font-weight: 600;
+        letter-spacing: 0.01em;
+    }
+
+    .o_field_widget .o_input,
+    .o_field_widget textarea,
+    .o_field_widget select {
+        transition: border-color $mk-theme-transition-fast, box-shadow $mk-theme-transition-fast, background-color $mk-theme-transition-fast;
+    }
+
+    .o_field_widget .o_input:hover,
+    .o_field_widget textarea:hover,
+    .o_field_widget select:hover {
+        --o-input-border-color: #{rgba($mk-appbar-active, 0.36)};
+    }
+
+    .o_field_widget .o_input:focus,
+    .o_field_widget textarea:focus,
+    .o_field_widget select:focus {
+        --o-input-border-color: #{rgba($mk-appbar-active, 0.68)};
+        box-shadow: 0 0 0 3px rgba($mk-appbar-active, $mk-theme-focus-ring-alpha);
+    }
+
+    .o_notebook .nav-link {
+        transition: background-color $mk-theme-transition-fast, color $mk-theme-transition-fast;
+    }
+
+    .o_notebook .nav-link.active {
+        color: $mk-theme-text-strong;
+        background: rgba($mk-appbar-active, 0.1);
+    }
+
+    .o_statusbar_status .o_arrow_button,
+    .o_statusbar_buttons .btn {
+        border-radius: $mk-theme-radius-sm;
+    }
+
+    .o_statusbar_status .o_arrow_button:not(.disabled):hover {
+        background: rgba($mk-appbar-active, 0.14);
+    }
+
+    .oe_button_box {
+        border-top: 1px solid rgba(15, 23, 42, 0.06);
+        padding-top: 0.75rem;
+    }
+
+    .oe_button_box .oe_stat_button {
+        border-radius: $mk-theme-radius-sm;
+        border: 1px solid rgba(15, 23, 42, 0.08);
+        transition: border-color $mk-theme-transition-fast, box-shadow $mk-theme-transition-fast;
+    }
+
+    .oe_button_box .oe_stat_button:hover {
+        border-color: rgba($mk-appbar-active, 0.28);
+        box-shadow: 0 8px 16px rgba(15, 23, 42, 0.07);
+    }
 }

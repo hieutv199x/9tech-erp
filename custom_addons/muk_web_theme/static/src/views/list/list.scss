@@ -1,0 +1,57 @@
+.o_list_view {
+    border: 1px solid $mk-theme-border-soft;
+    border-radius: $mk-theme-radius-md;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.98);
+    box-shadow: $mk-theme-elevation-1;
+    padding: 1rem 1rem 0.65rem;
+
+    .o_list_table {
+        margin-bottom: 0;
+    }
+
+    .o_list_table thead {
+        background: rgba(248, 250, 252, 0.94);
+    }
+
+    .o_list_table thead th {
+        color: $mk-theme-text-muted;
+        font-weight: 600;
+        border-bottom: 1px solid $mk-theme-border-soft;
+    }
+
+    .o_list_table tbody tr td {
+        border-color: rgba(15, 23, 42, 0.06);
+    }
+
+    .o_list_table tbody tr:hover {
+        background: rgba($mk-appbar-active, 0.07);
+    }
+
+    .o_list_table tbody tr.o_selected_row {
+        background: rgba($mk-appbar-active, 0.12);
+    }
+
+    .o_list_table tbody tr .o_data_cell a {
+        color: #1d4ed8;
+        text-decoration: none;
+    }
+
+    .o_list_table tbody tr .o_data_cell a:hover {
+        color: #1e40af;
+        text-decoration: underline;
+    }
+}
+
+.o_content .table-responsive {
+    border-radius: $mk-theme-radius-md;
+}
+
+.o_list_renderer .o_optional_columns_dropdown_toggle,
+.o_list_renderer .o_optional_columns .dropdown-toggle {
+    border-radius: $mk-theme-radius-sm;
+}
+
+.o_pager .btn {
+    min-width: 2rem;
+}

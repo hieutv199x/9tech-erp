@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <template id="mail_notification_layout_9tech" inherit_id="mail.mail_notification_layout" priority="90">
+            <xpath expr="//a[contains(@href, 'odoo.com') and normalize-space(.)='Odoo']" position="replace">
+                <a target="_blank" href="https://9tech.vn" style="color:#2563EB;">9tech</a>
+            </xpath>
+        </template>
+
+        <template id="mail_notification_light_9tech" inherit_id="mail.mail_notification_light" priority="90">
+            <xpath expr="//a[contains(@href, 'odoo.com') and normalize-space(.)='Odoo']" position="replace">
+                <a target="_blank" href="https://9tech.vn" style="color:#2563EB;">9tech</a>
+            </xpath>
+        </template>
+
+        <record id="base.partner_root" model="res.partner">
+            <field name="name">9tech Bot</field>
+        </record>
+
+        <record id="mail.module_install_notification" model="mail.message">
+            <field name="subject">Welcome to 9tech!</field>
+        </record>
+    </data>
+</odoo>

@@ -37,6 +37,20 @@
 				<div t-if="sidebarImageUrl" class="mk_apps_sidebar_logo p-2">
 					<img class="img-fluid mx-auto" t-att-src="sidebarImageUrl" alt="Logo"/>
 				</div>
+				<div t-if="this.canToggleSidebar" class="mk_apps_sidebar_header">
+					<button
+						type="button"
+						class="mk_apps_sidebar_toggle"
+						t-on-click="toggleSidebar"
+						t-att-title="this.isSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'"
+						t-att-aria-label="this.isSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'"
+					>
+						<i
+							aria-hidden="true"
+							t-att-class="'oi ' + (this.isSidebarCollapsed ? 'oi-chevron-right' : 'oi-chevron-left')"
+						/>
+					</button>
+				</div>
 			</div>
 		</div>
 	</t>

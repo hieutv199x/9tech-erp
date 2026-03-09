@@ -1,0 +1,156 @@
+.o_web_client {
+    color: $mk-theme-text-strong;
+    background:
+        radial-gradient(120% 80% at 100% -10%, rgba($mk-appbar-active, 0.08) 0%, rgba(255, 255, 255, 0) 56%),
+        linear-gradient(180deg, #fbfdff 0%, #eff4fb 100%);
+}
+
+.o_web_client .o_action_manager {
+    background: transparent;
+}
+
+.o_control_panel {
+    backdrop-filter: saturate(1.08) blur(8px);
+    background: rgba(255, 255, 255, 0.86);
+    border-bottom: 1px solid $mk-theme-border-soft;
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.9), 0 6px 16px rgba(15, 23, 42, 0.04);
+
+    .breadcrumb {
+        margin-bottom: 0;
+    }
+
+    .breadcrumb-item,
+    .breadcrumb-item a {
+        color: $mk-theme-text-muted;
+    }
+
+    .breadcrumb-item.active {
+        color: $mk-theme-text-strong;
+        font-weight: 600;
+    }
+
+    .o_cp_searchview .o_searchview {
+        border: 1px solid rgba(148, 163, 184, 0.34);
+        border-radius: $mk-theme-radius-sm;
+        background: rgba(255, 255, 255, 0.96);
+        box-shadow: inset 0 1px 1px rgba(15, 23, 42, 0.02);
+    }
+
+    .o_cp_searchview .o_searchview .o_searchview_input {
+        color: $mk-theme-text-strong;
+    }
+
+    .o_cp_searchview .o_searchview .o_facet {
+        border-radius: 999px;
+        background: rgba($mk-appbar-active, 0.12);
+        border: 1px solid rgba($mk-appbar-active, 0.22);
+        color: $mk-theme-text-strong;
+    }
+}
+
+.o_dropdown_menu,
+.o-dropdown--menu,
+.dropdown-menu {
+    border: 1px solid $mk-theme-border-soft !important;
+    border-radius: $mk-theme-radius-md !important;
+    box-shadow: $mk-theme-elevation-2 !important;
+    backdrop-filter: saturate(1.08);
+    background: rgba(255, 255, 255, 0.96);
+    padding: 0.35rem !important;
+    overflow: hidden;
+
+    .dropdown-item,
+    .o-dropdown-item {
+        border-radius: 0.55rem;
+        transition: background-color $mk-theme-transition-fast, color $mk-theme-transition-fast;
+    }
+
+    .dropdown-item:hover,
+    .dropdown-item:focus,
+    .o-dropdown-item:hover,
+    .o-dropdown-item:focus {
+        color: $mk-theme-text-strong;
+        background: rgba($mk-appbar-active, 0.14);
+    }
+}
+
+.btn {
+    border-radius: $mk-theme-radius-sm;
+    transition: background-color $mk-theme-transition-fast, border-color $mk-theme-transition-fast, box-shadow $mk-theme-transition-fast, color $mk-theme-transition-fast;
+}
+
+.btn-primary {
+    border-color: rgba($o-brand-primary, 0.84);
+    background: linear-gradient(180deg, rgba($o-brand-primary, 0.96) 0%, rgba($o-brand-primary, 0.86) 100%);
+    box-shadow: 0 6px 14px rgba($o-brand-primary, 0.24);
+}
+
+.btn-primary:hover {
+    border-color: rgba($o-brand-primary, 0.94);
+    background: linear-gradient(180deg, rgba($o-brand-primary, 1) 0%, rgba($o-brand-primary, 0.9) 100%);
+    box-shadow: 0 10px 18px rgba($o-brand-primary, 0.3);
+}
+
+.btn-secondary,
+.btn-light {
+    border-color: $mk-theme-border-soft;
+    color: $mk-theme-text-muted;
+}
+
+.btn-secondary:hover,
+.btn-light:hover {
+    border-color: rgba($mk-appbar-active, 0.35);
+    color: $mk-theme-text-strong;
+    background: rgba($mk-appbar-active, 0.08);
+}
+
+.btn:focus-visible,
+.dropdown-toggle:focus-visible,
+.o_searchview .o_searchview_input:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba($mk-appbar-active, $mk-theme-focus-ring-alpha) !important;
+}
+
+.o_renderer_with_searchpanel .o_search_panel {
+    border-right: 1px solid $mk-theme-border-soft;
+    background: rgba(255, 255, 255, 0.72);
+}
+
+.o_search_panel .o_search_panel_category_value,
+.o_search_panel .o_search_panel_filter_value {
+    border-radius: 0.5rem;
+    transition: background-color $mk-theme-transition-fast, color $mk-theme-transition-fast;
+}
+
+.o_search_panel .o_search_panel_category_value:hover,
+.o_search_panel .o_search_panel_filter_value:hover {
+    background: rgba($mk-appbar-active, 0.12);
+}
+
+.o_search_panel .o_search_panel_category_value header.active,
+.o_search_panel .o_search_panel_filter_value.active {
+    color: $mk-theme-text-strong;
+    background: rgba($mk-appbar-active, 0.14);
+}
+
+.mk_apps_sidebar_panel {
+    box-shadow: inset -1px 0 0 rgba(148, 163, 184, 0.3);
+}
+
+.mk_apps_sidebar_panel .mk_apps_sidebar_menu > li.active > a {
+    color: #FFFFFF;
+}
+
+.mk_apps_sidebar_panel .mk_apps_sidebar_menu > li:hover > a {
+    color: $mk-theme-text-strong;
+}
+
+@include media-breakpoint-down(md) {
+    .o_control_panel {
+        padding: 0.5rem 0.75rem;
+
+        .o_cp_searchview .o_searchview {
+            min-height: 2.2rem;
+        }
+    }
+}

@@ -1,1 +1,21 @@
+$o-brand-primary: #2563EB;
+$o-brand-secondary: #0F172A;
+$o-font-family-sans-serif: "IBM Plex Sans", "Source Sans 3", "Noto Sans", sans-serif;
+$headings-font-family: "IBM Plex Sans", "Source Sans 3", "Noto Sans", sans-serif;
+
 $o-navbar-badge-bg: $o-brand-primary;
+
+// Shared geometry and interaction tokens
+$mk-theme-radius-sm: 0.625rem !default;
+$mk-theme-radius-md: 0.875rem !default;
+$mk-theme-radius-lg: 1.125rem !default;
+
+$mk-theme-elevation-1: 0 8px 20px rgba(15, 23, 42, 0.07) !default;
+$mk-theme-elevation-2: 0 14px 30px rgba(15, 23, 42, 0.1) !default;
+$mk-theme-elevation-3: 0 22px 40px rgba(15, 23, 42, 0.14) !default;
+
+$mk-theme-transition-fast: 0.16s ease !default;
+$mk-theme-transition-smooth: 0.24s ease !default;
+
+$mk-theme-app-tile-size: 4.75rem !default;
+$mk-theme-app-grid-gap: 0.875rem !default;

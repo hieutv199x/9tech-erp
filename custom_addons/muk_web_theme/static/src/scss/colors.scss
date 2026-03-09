@@ -1,13 +1,28 @@
-// Colors
+// Theme colors managed by Settings > Backend Theme
+$mk_color_appsmenu_text: #0F172A;
+$mk_color_appbar_text: #334155;
+$mk_color_appbar_active: #2563EB;
+$mk_color_appbar_background: #F8FAFC;
 
-$mk_color_appsmenu_text: #F8F9FA;
-$mk_color_appbar_text: #DEE2E6;
-$mk_color_appbar_active: #5D8DA8;
-$mk_color_appbar_background: #111827;
-
-// Override
-
+// Compatibility exports used by muk_web_appsbar and theme styles
 $mk-appsmenu-color: $mk_color_appsmenu_text;
 $mk-appbar-color: $mk_color_appbar_text;
 $mk-appbar-active: $mk_color_appbar_active;
 $mk-appbar-background: $mk_color_appbar_background;
+
+// Semantic theme tokens for modern slate surfaces
+$mk-theme-surface-strong: rgba(248, 250, 252, 0.94) !default;
+$mk-theme-surface-overlay: rgba(241, 245, 249, 0.76) !default;
+$mk-theme-surface-card: #FFFFFF !default;
+$mk-theme-surface-soft: #F8FBFF !default;
+
+$mk-theme-border-soft: rgba(148, 163, 184, 0.28) !default;
+$mk-theme-border-strong: rgba(148, 163, 184, 0.44) !default;
+
+$mk-theme-text-strong: #0F172A !default;
+$mk-theme-text-muted: #334155 !default;
+$mk-theme-text-subtle: #64748B !default;
+
+$mk-theme-focus-ring-alpha: 0.24 !default;
+$mk-theme-glow-soft: rgba(37, 99, 235, 0.1) !default;
+$mk-theme-glow-strong: rgba(37, 99, 235, 0.2) !default;

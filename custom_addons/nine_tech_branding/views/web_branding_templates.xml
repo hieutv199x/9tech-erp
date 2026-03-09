@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="web_layout_title_9tech" inherit_id="web.layout" priority="90">
+        <xpath expr="//title" position="replace">
+            <title t-esc="title or '9tech'"/>
+        </xpath>
+    </template>
+
+    <template id="web_brand_promotion_message_9tech" inherit_id="web.brand_promotion_message" priority="90">
+        <xpath expr="//t[@t-set='odoo_logo']" position="replace">
+            <t t-set="odoo_logo">
+                <a target="_blank" href="https://9tech.vn" class="badge text-bg-light">9tech</a>
+            </t>
+        </xpath>
+        <xpath expr="//t[@t-set='final_message']" position="replace">
+            <t t-set="final_message">Powered by %s%s</t>
+        </xpath>
+    </template>
+
+    <template id="web_offline_branding_9tech" inherit_id="web.webclient_offline" priority="90">
+        <xpath expr="//div[@class='card']/img" position="replace">
+            <img src="/web/binary/company_logo" alt="9tech logo"/>
+        </xpath>
+        <xpath expr="//div[@class='card']/p" position="replace">
+            <p>Check your network connection and come back here. 9tech ERP will load as soon as you're back online.</p>
+        </xpath>
+    </template>
+
+    <template id="report_layout_title_9tech" inherit_id="web.report_layout" priority="90">
+        <xpath expr="//title" position="replace">
+            <title><t t-esc="title or '9tech Report'"/></title>
+        </xpath>
+    </template>
+
+    <template id="report_preview_layout_title_9tech" inherit_id="web.report_preview_layout" priority="90">
+        <xpath expr="//title" position="replace">
+            <title><t t-esc="title or '9tech Report'"/></title>
+        </xpath>
+    </template>
+
+    <template id="mail_discuss_public_title_9tech" inherit_id="mail.discuss_public_channel_template" priority="90">
+        <xpath expr="//title" position="replace">
+            <title t-esc="title or '9tech'"/>
+        </xpath>
+    </template>
+</odoo>
