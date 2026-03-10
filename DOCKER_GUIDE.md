@@ -19,6 +19,23 @@ The first path is your product layer (`custom_addons`), while `addons` remains p
 docker build -t 9tech-erp:local .
 ```
 
+Default startup in this image will auto-install (if not yet installed in the selected DB):
+
+- `muk_web_theme`
+- `nine_tech_branding`
+
+You can override with env var:
+
+```bash
+-e ODOO_INIT_MODULES="muk_web_theme,nine_tech_branding"
+```
+
+The target database is resolved from:
+
+1. `DB_NAME`
+2. `POSTGRES_DB`
+3. Odoo default behavior (if neither is provided)
+
 ## Run With PostgreSQL
 
 Example:
@@ -30,6 +47,7 @@ docker run --rm -it \
   -e PORT=5432 \
   -e USER=odoo \
   -e PASSWORD=odoo \
+  -e DB_NAME=odoo \
   9tech-erp:local
 ```
 
@@ -40,10 +58,18 @@ Production deployment uses:
 - `deploy/docker-compose.prod.yml`
 - `deploy/remote-deploy.sh`
 
-The Odoo service runs with:
+The Odoo service reads external DB settings from env vars:
+
+- `DB_HOST`
+- `DB_PORT`
+- `DB_USERNAME`
+- `DB_PASSWORD`
+- `DB_DATABASE`
+
+Then runs with:
 
 ```bash
-odoo -c /etc/odoo/odoo.conf --db_host=db --db_port=5432 ...
+odoo -c /etc/odoo/odoo.conf --db_host=${DB_HOST} --db_port=${DB_PORT} ...
 ```
 
 ## Health Check
