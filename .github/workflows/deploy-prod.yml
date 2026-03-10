@@ -69,18 +69,18 @@ jobs:
 
       - name: Validate required secrets
         env:
-          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
           VPS_HOST: ${{ secrets.VPS_HOST }}
           VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
           VPS_SSH_PRIVATE_KEY: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
-          PROD_POSTGRES_DB: ${{ secrets.PROD_POSTGRES_DB }}
-          PROD_POSTGRES_USER: ${{ secrets.PROD_POSTGRES_USER }}
-          PROD_POSTGRES_PASSWORD: ${{ secrets.PROD_POSTGRES_PASSWORD }}
-          PROD_ODOO_ADMIN_PASSWD: ${{ secrets.PROD_ODOO_ADMIN_PASSWD }}
+          PROD_DB_HOST: ${{ secrets.PROD_DB_HOST }}
+          PROD_DB_USERNAME: ${{ secrets.PROD_DB_USERNAME }}
+          PROD_DB_PASSWORD: ${{ secrets.PROD_DB_PASSWORD }}
+          PROD_DB_DATABASE: ${{ secrets.PROD_DB_DATABASE }}
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
         run: |
           missing=0
-          for key in DOCKERHUB_USERNAME DOCKERHUB_TOKEN VPS_HOST VPS_SSH_USER VPS_SSH_PRIVATE_KEY PROD_POSTGRES_DB PROD_POSTGRES_USER PROD_POSTGRES_PASSWORD PROD_ODOO_ADMIN_PASSWD; do
+          for key in VPS_HOST VPS_SSH_USER VPS_SSH_PRIVATE_KEY PROD_DB_HOST PROD_DB_USERNAME PROD_DB_PASSWORD PROD_DB_DATABASE; do
             if [ -z "${!key}" ]; then
               echo "Missing required secret: ${key}" >&2
               missing=1
@@ -88,6 +88,10 @@ jobs:
           done
           if [ "${missing}" -ne 0 ]; then
             exit 1
+          fi
+
+          if [ -z "${DOCKERHUB_USERNAME}" ] || [ -z "${DOCKERHUB_TOKEN}" ]; then
+            echo "DOCKERHUB_USERNAME/DOCKERHUB_TOKEN not set, deploy will use anonymous pull."
           fi
 
       - name: Upload deploy assets to VPS
@@ -109,10 +113,11 @@ jobs:
           APP_IMAGE: ${{ needs.prepare.outputs.image_ref }}
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
-          POSTGRES_DB: ${{ secrets.PROD_POSTGRES_DB }}
-          POSTGRES_USER: ${{ secrets.PROD_POSTGRES_USER }}
-          POSTGRES_PASSWORD: ${{ secrets.PROD_POSTGRES_PASSWORD }}
-          ODOO_ADMIN_PASSWD: ${{ secrets.PROD_ODOO_ADMIN_PASSWD }}
+          DB_HOST: ${{ secrets.PROD_DB_HOST }}
+          DB_PORT: ${{ secrets.PROD_DB_PORT }}
+          DB_USERNAME: ${{ secrets.PROD_DB_USERNAME }}
+          DB_PASSWORD: ${{ secrets.PROD_DB_PASSWORD }}
+          DB_DATABASE: ${{ secrets.PROD_DB_DATABASE }}
           ODOO_DB_FILTER: ${{ secrets.PROD_ODOO_DB_FILTER }}
           ODOO_HTTP_PORT: ${{ secrets.PROD_ODOO_HTTP_PORT }}
         with:
@@ -120,11 +125,12 @@ jobs:
           username: ${{ secrets.VPS_SSH_USER }}
           key: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
           port: ${{ secrets.VPS_SSH_PORT != '' && secrets.VPS_SSH_PORT || 22 }}
-          envs: PROJECT_DIR,APP_IMAGE,DOCKERHUB_USERNAME,DOCKERHUB_TOKEN,POSTGRES_DB,POSTGRES_USER,POSTGRES_PASSWORD,ODOO_ADMIN_PASSWD,ODOO_DB_FILTER,ODOO_HTTP_PORT
+          envs: PROJECT_DIR,APP_IMAGE,DOCKERHUB_USERNAME,DOCKERHUB_TOKEN,DB_HOST,DB_PORT,DB_USERNAME,DB_PASSWORD,DB_DATABASE,ODOO_DB_FILTER,ODOO_HTTP_PORT
           script_stop: true
           script: |
             set -euo pipefail
             PROJECT_DIR="${PROJECT_DIR:-/opt/9tech-erp}"
+            DB_PORT="${DB_PORT:-5432}"
             ODOO_DB_FILTER="${ODOO_DB_FILTER:-.*}"
             ODOO_HTTP_PORT="${ODOO_HTTP_PORT:-8069}"
 
@@ -132,15 +138,20 @@ jobs:
 
             cat > "${PROJECT_DIR}/.env" <<EOF
             APP_IMAGE=${APP_IMAGE}
-            POSTGRES_DB=${POSTGRES_DB}
-            POSTGRES_USER=${POSTGRES_USER}
-            POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-            ODOO_ADMIN_PASSWD=${ODOO_ADMIN_PASSWD}
+            DB_HOST=${DB_HOST}
+            DB_PORT=${DB_PORT}
+            DB_USERNAME=${DB_USERNAME}
+            DB_PASSWORD=${DB_PASSWORD}
+            DB_DATABASE=${DB_DATABASE}
             ODOO_DB_FILTER=${ODOO_DB_FILTER}
             ODOO_HTTP_PORT=${ODOO_HTTP_PORT}
             EOF
             chmod 600 "${PROJECT_DIR}/.env"
 
-            echo "${DOCKERHUB_TOKEN}" | docker login -u "${DOCKERHUB_USERNAME}" --password-stdin
+            if [ -n "${DOCKERHUB_USERNAME:-}" ] && [ -n "${DOCKERHUB_TOKEN:-}" ]; then
+              echo "${DOCKERHUB_TOKEN}" | docker login -u "${DOCKERHUB_USERNAME}" --password-stdin
+            else
+              echo "Skipping Docker Hub login (credentials not provided)."
+            fi
             chmod +x "${PROJECT_DIR}/deploy/remote-deploy.sh"
             PROJECT_DIR="${PROJECT_DIR}" "${PROJECT_DIR}/deploy/remote-deploy.sh"

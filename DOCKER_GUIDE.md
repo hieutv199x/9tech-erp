@@ -72,6 +72,29 @@ Then runs with:
 odoo -c /etc/odoo/odoo.conf --db_host=${DB_HOST} --db_port=${DB_PORT} ...
 ```
 
+## CI/CD (GitHub Actions)
+
+Workflows:
+
+- `.github/workflows/ci.yml`: lint and security scans on PR/push.
+- `.github/workflows/dockerhub-image.yml`: build image, push on `main`.
+- `.github/workflows/deploy-prod.yml`: deploy to VPS after image workflow succeeds on `main` (or manual dispatch).
+
+Required repository/environment secrets for production deploy:
+
+- `VPS_HOST`
+- `VPS_SSH_USER`
+- `VPS_SSH_PRIVATE_KEY`
+- `VPS_SSH_PORT` (optional, default `22`)
+- `PROD_DB_HOST`
+- `PROD_DB_PORT` (optional, default `5432`)
+- `PROD_DB_USERNAME`
+- `PROD_DB_PASSWORD`
+- `PROD_DB_DATABASE`
+- `PROD_ODOO_DB_FILTER` (optional, default `.*`)
+- `PROD_ODOO_HTTP_PORT` (optional, default `8069`)
+- `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN` (optional for public images)
+
 ## Health Check
 
 Deployment health check endpoint:

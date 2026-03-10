@@ -16,6 +16,33 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  deploy-config:
+    name: Validate Deploy Config
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate production compose rendering
+        run: |
+          cat > /tmp/prod.env <<EOF
+          APP_IMAGE=example/9tech-erp:main
+          DB_HOST=192.168.172.51
+          DB_PORT=5432
+          DB_USERNAME=erp_odoo
+          DB_PASSWORD=example-password
+          DB_DATABASE=erp
+          ODOO_DB_FILTER=.*
+          ODOO_HTTP_PORT=8069
+          EOF
+          docker compose --env-file /tmp/prod.env -f deploy/docker-compose.prod.yml config >/dev/null
+
+      - name: Validate deploy shell scripts syntax
+        run: |
+          bash -n deploy/remote-deploy.sh
+          bash -n deploy/vps-bootstrap.sh
+          bash -n docker/entrypoint.sh
+
   lint:
     name: Ruff Lint
     runs-on: ubuntu-latest
